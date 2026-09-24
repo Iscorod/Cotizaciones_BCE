@@ -33,7 +33,6 @@
       .rates { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; padding:16px 22px 20px; }
       .rate-card { position:relative; min-width:0; padding:17px 16px; border:1px solid var(--line); border-radius:13px; background:#fff; box-shadow:0 4px 12px rgba(16,42,67,.04); }
       .rate-card__label { margin:0 0 11px; color:var(--navy); font-size:.93rem; font-weight:800; }
-      .rate-card__flag { display:inline-block; margin-right:7px; font-size:1.08rem; vertical-align:-1px; }
       .rate-card__title { margin:0 0 4px; color:var(--muted); font-size:.7rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
       .rate-card__value { margin:0; color:var(--ink); font-size:1.38rem; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.03em; }
       .rate-card__unit { margin:8px 0 0; color:var(--muted); font-size:.77rem; }
@@ -64,10 +63,10 @@
         </div>
         <div class="notice" id="notice"><b>ℹ</b><div>Las cotizaciones corresponden a la fecha seleccionada.</div></div>
         <div class="rates" id="rates">
-          <article class="rate-card"><p class="rate-card__label"><span class="rate-card__flag">🇺🇸</span>EUR / USD</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">1,1596</p><p class="rate-card__unit">1 EUR en USD</p></article>
-          <article class="rate-card"><p class="rate-card__label"><span class="rate-card__flag">🇦🇺</span>EUR / AUD</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">1,6191</p><p class="rate-card__unit">1 EUR en AUD</p></article>
-          <article class="rate-card"><p class="rate-card__label"><span class="rate-card__flag">🇧🇷</span>EUR / BRL</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">5,9972</p><p class="rate-card__unit">1 EUR en BRL</p></article>
-          <article class="rate-card"><p class="rate-card__label"><span class="rate-card__flag">🇬🇧</span>EUR / GBP</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">0,85648</p><p class="rate-card__unit">1 EUR en GBP</p></article>
+          <article class="rate-card"><p class="rate-card__label">EUR / USD</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">1,1596</p><p class="rate-card__unit">1 EUR en USD</p></article>
+          <article class="rate-card"><p class="rate-card__label">EUR / AUD</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">1,6191</p><p class="rate-card__unit">1 EUR en AUD</p></article>
+          <article class="rate-card"><p class="rate-card__label">EUR / BRL</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">5,9972</p><p class="rate-card__unit">1 EUR en BRL</p></article>
+          <article class="rate-card"><p class="rate-card__label">EUR / GBP</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">0,85648</p><p class="rate-card__unit">1 EUR en GBP</p></article>
         </div>
       </section>
       <footer><p>Los datos se publican únicamente en días hábiles del BCE.</p><p>Fuente: API oficial del Banco Central Europeo</p></footer>
@@ -75,15 +74,15 @@
     <script>
       const input=document.querySelector('#date'), notice=document.querySelector('#notice'), result=document.querySelector('#result-date'), button=document.querySelector('#query'), rates=document.querySelector('#rates'), currencySelect=document.querySelector('#currency'), addPair=document.querySelector('#add-pair');
       const formatter=new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'short',year:'numeric'});
-      const availableCurrencies={USD:['🇺🇸','Dólar estadounidense'],AUD:['🇦🇺','Dólar australiano'],BRL:['🇧🇷','Real brasileño'],GBP:['🇬🇧','Libra esterlina'],CAD:['🇨🇦','Dólar canadiense'],CHF:['🇨🇭','Franco suizo'],JPY:['🇯🇵','Yen japonés'],NOK:['🇳🇴','Corona noruega'],SEK:['🇸🇪','Corona sueca'],DKK:['🇩🇰','Corona danesa'],PLN:['🇵🇱','Esloti polaco'],CZK:['🇨🇿','Corona checa'],HUF:['🇭🇺','Forinto húngaro'],RON:['🇷🇴','Leu rumano'],CNY:['🇨🇳','Yuan chino'],HKD:['🇭🇰','Dólar de Hong Kong'],INR:['🇮🇳','Rupia india'],KRW:['🇰🇷','Won surcoreano'],MXN:['🇲🇽','Peso mexicano'],NZD:['🇳🇿','Dólar neozelandés'],SGD:['🇸🇬','Dólar de Singapur'],ZAR:['🇿🇦','Rand sudafricano']};
+      const availableCurrencies={USD:'Dólar estadounidense',AUD:'Dólar australiano',BRL:'Real brasileño',GBP:'Libra esterlina',CAD:'Dólar canadiense',CHF:'Franco suizo',JPY:'Yen japonés',NOK:'Corona noruega',SEK:'Corona sueca',DKK:'Corona danesa',PLN:'Esloti polaco',CZK:'Corona checa',HUF:'Forinto húngaro',RON:'Leu rumano',CNY:'Yuan chino',HKD:'Dólar de Hong Kong',INR:'Rupia india',KRW:'Won surcoreano',MXN:'Peso mexicano',NZD:'Dólar neozelandés',SGD:'Dólar de Singapur',ZAR:'Rand sudafricano'};
       const fallbackCurrencies=['USD','AUD','BRL','GBP'];
       let currencies=[];
       const numberFormat=new Intl.NumberFormat('es-ES',{minimumFractionDigits:4,maximumFractionDigits:5});
       const saveCurrencies=()=>localStorage.setItem('bce-currencies',JSON.stringify(currencies));
-      const renderCurrencyOptions=()=>{currencySelect.innerHTML=Object.entries(availableCurrencies).filter(([code])=>!currencies.includes(code)).map(([code,[flag,name]])=>`<option value="${code}">${flag} ${code} · ${name}</option>`).join(''); addPair.disabled=!currencySelect.options.length;};
+      const renderCurrencyOptions=()=>{currencySelect.innerHTML=Object.entries(availableCurrencies).filter(([code])=>!currencies.includes(code)).map(([code,name])=>`<option value="${code}">${code} · ${name}</option>`).join(''); addPair.disabled=!currencySelect.options.length;};
       const showRates=rows=>{
         const values=Object.fromEntries(rows.map(row=>[row.CURRENCY,Number(row.OBS_VALUE)]));
-        rates.innerHTML=currencies.map(currency=>`<article class="rate-card"><button class="rate-card__remove" type="button" data-remove-currency="${currency}" aria-label="Eliminar EUR / ${currency}" title="Eliminar par">×</button><p class="rate-card__label"><span class="rate-card__flag">${availableCurrencies[currency][0]}</span>EUR / ${currency}</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">${numberFormat.format(values[currency])}</p><p class="rate-card__unit">1 EUR en ${currency}</p></article>`).join('');
+        rates.innerHTML=currencies.map(currency=>`<article class="rate-card"><button class="rate-card__remove" type="button" data-remove-currency="${currency}" aria-label="Eliminar EUR / ${currency}" title="Eliminar par">×</button><p class="rate-card__label">EUR / ${currency}</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">${numberFormat.format(values[currency])}</p><p class="rate-card__unit">1 EUR en ${currency}</p></article>`).join('');
       };
       async function consult(){
         const selected=new Date(input.value+'T12:00:00');
