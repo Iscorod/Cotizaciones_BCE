@@ -29,6 +29,7 @@
       .pair-picker__row { display:flex; gap:7px; }
       .pair-picker__row button { padding:0 13px; }
       .notice { display:flex; align-items:flex-start; gap:11px; margin:14px 22px 0; padding:11px 14px; background:var(--aqua); border-radius:11px; color:#174e63; font-size:.89rem; line-height:1.4; }
+      .notice[hidden] { display:none; }
       .notice b { font-size:1.1rem; }
       .rates { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; padding:16px 22px 20px; }
       .rate-card { position:relative; min-width:0; padding:17px 16px; border:1px solid var(--line); border-radius:13px; background:#fff; box-shadow:0 4px 12px rgba(16,42,67,.04); }
@@ -36,6 +37,8 @@
       .rate-card__title { margin:0 0 4px; color:var(--muted); font-size:.7rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
       .rate-card__value { margin:0; color:var(--ink); font-size:1.38rem; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.03em; }
       .rate-card__unit { margin:8px 0 0; color:var(--muted); font-size:.77rem; }
+      .rate-card__date { margin:8px 0 0; color:var(--muted); font-size:.75rem; line-height:1.35; }
+      .rate-card__date--fallback { color:#9c5b11; }
       .rate-card__remove { position:absolute; top:10px; right:10px; display:grid; place-items:center; width:24px; min-height:24px; padding:0; border:1px solid var(--line); border-radius:50%; background:#fff; color:var(--muted); font-size:1rem; line-height:1; }
       .rate-card__remove:hover { border-color:#d64545; background:#fff5f5; color:#b42318; }
       .rate-card--message { grid-column:1 / -1; color:var(--muted); }
@@ -61,7 +64,7 @@
           <div class="pair-picker"><label for="currency">Añadir par EUR /</label><div class="pair-picker__row"><select id="currency" aria-label="Divisa a añadir"></select><button id="add-pair" type="button">Añadir</button></div></div>
           <div class="data-note"><strong id="result-date">Datos del 24 sep 2026</strong><span id="update">Última actualización: 10:37</span></div>
         </div>
-        <div class="notice" id="notice"><b>ℹ</b><div>Las cotizaciones corresponden a la fecha seleccionada.</div></div>
+        <div class="notice" id="notice" hidden aria-live="polite"></div>
         <div class="rates" id="rates">
           <article class="rate-card"><p class="rate-card__label">EUR / USD</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">1,1596</p><p class="rate-card__unit">1 EUR en USD</p></article>
           <article class="rate-card"><p class="rate-card__label">EUR / AUD</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">1,6191</p><p class="rate-card__unit">1 EUR en AUD</p></article>
@@ -81,27 +84,30 @@
       const saveCurrencies=()=>localStorage.setItem('bce-currencies',JSON.stringify(currencies));
       const renderCurrencyOptions=()=>{currencySelect.innerHTML=Object.entries(availableCurrencies).filter(([code])=>!currencies.includes(code)).map(([code,name])=>`<option value="${code}">${code} · ${name}</option>`).join(''); addPair.disabled=!currencySelect.options.length;};
       const showRates=rows=>{
-        const values=Object.fromEntries(rows.map(row=>[row.CURRENCY,Number(row.OBS_VALUE)]));
-        rates.innerHTML=currencies.map(currency=>`<article class="rate-card"><button class="rate-card__remove" type="button" data-remove-currency="${currency}" aria-label="Eliminar EUR / ${currency}" title="Eliminar par">×</button><p class="rate-card__label">EUR / ${currency}</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">${numberFormat.format(values[currency])}</p><p class="rate-card__unit">1 EUR en ${currency}</p></article>`).join('');
+        const values=Object.fromEntries(rows.map(row=>[row.CURRENCY,{value:Number(row.OBS_VALUE),date:row.DATE}]));
+        rates.innerHTML=currencies.map(currency=>{
+          const rate=values[currency];
+          const fallback=rate && rate.date!==input.value;
+          const dateText=rate ? (fallback ? `Último dato disponible: ${formatter.format(new Date(rate.date+'T12:00:00'))}` : 'Dato de la fecha seleccionada') : 'Sin dato disponible';
+          return `<article class="rate-card"><button class="rate-card__remove" type="button" data-remove-currency="${currency}" aria-label="Eliminar EUR / ${currency}" title="Eliminar par">×</button><p class="rate-card__label">EUR / ${currency}</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">${rate ? numberFormat.format(rate.value) : '—'}</p><p class="rate-card__unit">1 EUR en ${currency}</p><p class="rate-card__date${fallback?' rate-card__date--fallback':''}">${dateText}</p></article>`;
+        }).join('');
       };
       async function consult(){
         const selected=new Date(input.value+'T12:00:00');
         if(Number.isNaN(selected.getTime())) return;
         button.disabled=true; button.textContent='Consultando…';
+        notice.hidden=false;
         notice.innerHTML='<b>…</b><div>Consultando las cotizaciones oficiales del BCE.</div>';
         try {
           const response=await fetch('/api/rates?date='+encodeURIComponent(input.value)+'&currencies='+encodeURIComponent(currencies.join(',')));
           if(!response.ok) throw new Error('No se pudo obtener la cotización');
           const data=await response.json();
-          showRates(data.rates.map(rate=>({CURRENCY:rate.currency,OBS_VALUE:rate.value})));
-          const exact=data.date===input.value;
-          const used=new Date(data.date+'T12:00:00');
-          result.textContent='Datos del '+formatter.format(used);
-          notice.innerHTML=exact
-            ?'<b>ℹ</b><div>Las cotizaciones corresponden a la fecha seleccionada.</div>'
-            :'<b>↳</b><div><strong>La fecha seleccionada no tiene publicación del BCE.</strong><br>Se muestra el valor del último día hábil disponible: '+formatter.format(used)+'.</div>';
+          showRates(data.rates.map(rate=>({CURRENCY:rate.currency,OBS_VALUE:rate.value,DATE:rate.date})));
+          result.textContent='Cotizaciones por divisa';
+          notice.hidden=true;
         } catch(error) {
           result.textContent='Sin datos disponibles';
+          notice.hidden=false;
           notice.innerHTML='<b>!</b><div><strong>No se ha podido encontrar una cotización para esa fecha.</strong><br>Prueba con una fecha anterior o vuelve a intentarlo.</div>';
           rates.innerHTML='<article class="rate-card rate-card--message">No hay resultados para mostrar.</article>';
         } finally {
@@ -111,7 +117,7 @@
       button.addEventListener('click',consult);
       input.addEventListener('change',consult);
       addPair.addEventListener('click',()=>{if(!currencySelect.value)return; currencies.push(currencySelect.value); saveCurrencies(); renderCurrencyOptions(); consult();});
-      rates.addEventListener('click',event=>{const remove=event.target.closest('[data-remove-currency]');if(!remove)return;if(currencies.length===1){notice.innerHTML='<b>ℹ</b><div>Debe quedar al menos un par para consultar.</div>';return;}currencies=currencies.filter(code=>code!==remove.dataset.removeCurrency);saveCurrencies();renderCurrencyOptions();consult();});
+      rates.addEventListener('click',event=>{const remove=event.target.closest('[data-remove-currency]');if(!remove)return;if(currencies.length===1){notice.hidden=false;notice.innerHTML='<b>ℹ</b><div>Debe quedar al menos un par para consultar.</div>';return;}currencies=currencies.filter(code=>code!==remove.dataset.removeCurrency);saveCurrencies();renderCurrencyOptions();consult();});
       async function loadCurrencies(){
         try {
           const saved=JSON.parse(localStorage.getItem('bce-currencies'));
