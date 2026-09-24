@@ -68,17 +68,44 @@
           </table>
         </div>
       </section>
-      <footer><p>Los datos se publican únicamente en días hábiles del BCE.</p><p>Boceto de la app web · Datos de ejemplo</p></footer>
+      <footer><p>Los datos se publican únicamente en días hábiles del BCE.</p><p>Fuente: API oficial del Banco Central Europeo</p></footer>
     </main>
     <script>
-      const input=document.querySelector('#date'), notice=document.querySelector('#notice'), result=document.querySelector('#result-date');
+      const input=document.querySelector('#date'), notice=document.querySelector('#notice'), result=document.querySelector('#result-date'), button=document.querySelector('#query'), rates=document.querySelector('#rates');
       const formatter=new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'short',year:'numeric'});
-      document.querySelector('#query').addEventListener('click',()=>{
-        const selected=new Date(input.value+'T12:00:00'); if(Number.isNaN(selected))return;
-        const used=new Date(selected); while(used.getDay()===0||used.getDay()===6) used.setDate(used.getDate()-1);
-        const exact=used.getTime()===selected.getTime(); result.textContent='Datos del '+formatter.format(used);
-        notice.innerHTML=exact?'<b>ℹ</b><div>Las cotizaciones corresponden a la fecha seleccionada.</div>':'<b>↳</b><div><strong>La fecha seleccionada no tiene publicación del BCE.</strong><br>Se muestra el valor del último día hábil disponible: '+formatter.format(used)+'.</div>';
-      });
+      const currencies=['USD','AUD','BRL','GBP'];
+      const numberFormat=new Intl.NumberFormat('es-ES',{minimumFractionDigits:4,maximumFractionDigits:5});
+      const showRates=rows=>{
+        const values=Object.fromEntries(rows.map(row=>[row.CURRENCY,Number(row.OBS_VALUE)]));
+        rates.innerHTML=currencies.map(currency=>`<tr><td>EUR / ${currency}</td><td>${numberFormat.format(values[currency])}</td><td class="unit">1 EUR en ${currency}</td></tr>`).join('');
+      };
+      async function consult(){
+        const selected=new Date(input.value+'T12:00:00');
+        if(Number.isNaN(selected.getTime())) return;
+        button.disabled=true; button.textContent='Consultando…';
+        notice.innerHTML='<b>…</b><div>Consultando las cotizaciones oficiales del BCE.</div>';
+        try {
+          const response=await fetch('/api/rates?date='+encodeURIComponent(input.value));
+          if(!response.ok) throw new Error('No se pudo obtener la cotización');
+          const data=await response.json();
+          showRates(data.rates.map(rate=>({CURRENCY:rate.currency,OBS_VALUE:rate.value})));
+          const exact=data.date===input.value;
+          const used=new Date(data.date+'T12:00:00');
+          result.textContent='Datos del '+formatter.format(used);
+          notice.innerHTML=exact
+            ?'<b>ℹ</b><div>Las cotizaciones corresponden a la fecha seleccionada.</div>'
+            :'<b>↳</b><div><strong>La fecha seleccionada no tiene publicación del BCE.</strong><br>Se muestra el valor del último día hábil disponible: '+formatter.format(used)+'.</div>';
+        } catch(error) {
+          result.textContent='Sin datos disponibles';
+          notice.innerHTML='<b>!</b><div><strong>No se ha podido encontrar una cotización para esa fecha.</strong><br>Prueba con una fecha anterior o vuelve a intentarlo.</div>';
+          rates.innerHTML='<tr><td colspan="3" class="unit">No hay resultados para mostrar.</td></tr>';
+        } finally {
+          button.disabled=false; button.textContent='Consultar';
+        }
+      }
+      button.addEventListener('click',consult);
+      input.addEventListener('change',consult);
+      consult();
     </script>
   </body>
 </html>
