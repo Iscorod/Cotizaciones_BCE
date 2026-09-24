@@ -1,4 +1,4 @@
-const currencies = ["USD", "AUD", "BRL", "GBP"];
+const defaultCurrencies = ["USD", "AUD", "BRL", "GBP"];
 
 function json(payload, status = 200) {
   return Response.json(payload, {
@@ -18,6 +18,13 @@ export default {
       return json({ error: "Indica una fecha válida en formato AAAA-MM-DD." }, 400);
     }
 
+    const requestedCurrencies = (new URL(request.url).searchParams.get("currencies") || defaultCurrencies.join(","))
+      .split(",")
+      .map((currency) => currency.trim().toUpperCase())
+      .filter((currency, index, list) => /^[A-Z]{3}$/.test(currency) && list.indexOf(currency) === index)
+      .slice(0, 12);
+    if (!requestedCurrencies.length) return json({ error: "Indica al menos una divisa válida." }, 400);
+
     const end = new Date(`${requestedDate}T12:00:00Z`);
     const start = new Date(end);
     start.setUTCDate(start.getUTCDate() - 14);
@@ -27,7 +34,7 @@ export default {
       startPeriod: toIso(start),
       endPeriod: requestedDate,
     });
-    const endpoint = `https://data-api.ecb.europa.eu/service/data/EXR/D.USD+AUD+BRL+GBP.EUR.SP00.A?${params}`;
+    const endpoint = `https://data-api.ecb.europa.eu/service/data/EXR/D.${requestedCurrencies.join("+")}.EUR.SP00.A?${params}`;
 
     try {
       const response = await fetch(endpoint);
@@ -38,11 +45,11 @@ export default {
       const groups = {};
       for (const line of lines) {
         const row = Object.fromEntries(line.split(",").map((value, index) => [keys[index], value]));
-        if (!currencies.includes(row.CURRENCY)) continue;
+        if (!requestedCurrencies.includes(row.CURRENCY)) continue;
         (groups[row.TIME_PERIOD] ||= []).push({ currency: row.CURRENCY, value: Number(row.OBS_VALUE) });
       }
 
-      const date = Object.keys(groups).sort().reverse().find((key) => groups[key].length === currencies.length);
+      const date = Object.keys(groups).sort().reverse().find((key) => requestedCurrencies.every((currency) => groups[key].some((rate) => rate.currency === currency)));
       if (!date) return json({ error: "No hay datos del BCE para esa fecha." }, 404);
 
       return json({ requestedDate, date, rates: groups[date] });

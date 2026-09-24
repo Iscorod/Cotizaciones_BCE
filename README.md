@@ -10,3 +10,5 @@ Boceto estático para consultar tipos de cambio oficiales del Banco Central Euro
 4. Pulsa **Deploy**.
 
 La aplicación se publica desde la carpeta `dist`. La función `api/rates.mjs` se ejecuta en Vercel y consulta la API del BCE en cada fecha solicitada; así se evitan restricciones de acceso del navegador a la fuente externa.
+
+Los pares que cada persona añade se guardan en el navegador de su dispositivo. Para compartir una selección entre dispositivos o usuarios habría que añadir almacenamiento compartido.

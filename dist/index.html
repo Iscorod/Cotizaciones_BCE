@@ -21,22 +21,25 @@
       .panel { background:#fff; border:1px solid var(--line); box-shadow:0 20px 50px rgba(16,42,67,.08); border-radius:20px; overflow:hidden; }
       .controls { display:flex; align-items:end; gap:16px; padding:18px 22px; border-bottom:1px solid var(--line); }
       label { display:block; font-size:.85rem; color:var(--muted); font-weight:700; margin-bottom:7px; }
-      input { appearance:none; border:1px solid #9fb3c8; border-radius:9px; padding:12px 13px; color:var(--ink); font:inherit; min-height:46px; }
+      input, select { appearance:none; border:1px solid #9fb3c8; border-radius:9px; padding:12px 13px; color:var(--ink); background:#fff; font:inherit; min-height:46px; }
       button { min-height:46px; padding:0 18px; border:0; border-radius:9px; background:var(--navy); color:#fff; font:700 .95rem inherit; cursor:pointer; }
       button:hover { background:var(--blue); }
       .data-note { margin-left:auto; text-align:right; color:var(--muted); font-size:.84rem; line-height:1.4; }
       .data-note strong { display:block; color:var(--ink); }
+      .pair-picker__row { display:flex; gap:7px; }
+      .pair-picker__row button { padding:0 13px; }
       .notice { display:flex; align-items:flex-start; gap:11px; margin:14px 22px 0; padding:11px 14px; background:var(--aqua); border-radius:11px; color:#174e63; font-size:.89rem; line-height:1.4; }
       .notice b { font-size:1.1rem; }
       .rates { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; padding:16px 22px 20px; }
       .rate-card { min-width:0; padding:17px 16px; border:1px solid var(--line); border-radius:13px; background:#fff; box-shadow:0 4px 12px rgba(16,42,67,.04); }
       .rate-card__label { margin:0 0 11px; color:var(--navy); font-size:.93rem; font-weight:800; }
+      .rate-card__flag { display:inline-block; margin-right:7px; font-size:1.08rem; vertical-align:-1px; }
       .rate-card__title { margin:0 0 4px; color:var(--muted); font-size:.7rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
       .rate-card__value { margin:0; color:var(--ink); font-size:1.38rem; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.03em; }
       .rate-card__unit { margin:8px 0 0; color:var(--muted); font-size:.77rem; }
       .rate-card--message { grid-column:1 / -1; color:var(--muted); }
       footer { margin-top:14px; display:flex; justify-content:space-between; gap:20px; color:var(--muted); font-size:.77rem; }
-      @media (max-width:760px) { main{padding:22px 16px 28px} header{margin-bottom:20px}.source{display:none}h1{margin-top:20px}.controls{padding:18px;display:grid;grid-template-columns:1fr 1fr}.controls button{grid-column:span 2}.data-note{margin:0;text-align:left}.rates{grid-template-columns:repeat(2,minmax(0,1fr));padding:14px 16px 18px}.rate-card{padding:15px 13px}footer{display:block}footer p{margin:7px 0} }
+      @media (max-width:760px) { main{padding:22px 16px 28px} header{margin-bottom:20px}.source{display:none}h1{margin-top:20px}.controls{padding:18px;display:grid;grid-template-columns:1fr 1fr}.controls button{grid-column:span 2}.pair-picker{grid-column:span 2}.data-note{margin:0;text-align:left}.rates{grid-template-columns:repeat(2,minmax(0,1fr));padding:14px 16px 18px}.rate-card{padding:15px 13px}footer{display:block}footer p{margin:7px 0} }
       @media (max-width:430px) { .rates{grid-template-columns:1fr 1fr;gap:9px}.rate-card__value{font-size:1.15rem}.rate-card__label{font-size:.84rem}.controls{grid-template-columns:1fr}.controls button{grid-column:auto} }
     </style>
   </head>
@@ -54,26 +57,31 @@
         <div class="controls">
           <div><label for="date">Fecha a consultar</label><input id="date" type="date" value="2026-09-24" /></div>
           <button id="query" type="button">Consultar</button>
+          <div class="pair-picker"><label for="currency">Añadir par EUR /</label><div class="pair-picker__row"><select id="currency" aria-label="Divisa a añadir"></select><button id="add-pair" type="button">Añadir</button></div></div>
           <div class="data-note"><strong id="result-date">Datos del 24 sep 2026</strong><span id="update">Última actualización: 10:37</span></div>
         </div>
         <div class="notice" id="notice"><b>ℹ</b><div>Las cotizaciones corresponden a la fecha seleccionada.</div></div>
         <div class="rates" id="rates">
-          <article class="rate-card"><p class="rate-card__label">EUR / USD</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">1,1596</p><p class="rate-card__unit">1 EUR en USD</p></article>
-          <article class="rate-card"><p class="rate-card__label">EUR / AUD</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">1,6191</p><p class="rate-card__unit">1 EUR en AUD</p></article>
-          <article class="rate-card"><p class="rate-card__label">EUR / BRL</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">5,9972</p><p class="rate-card__unit">1 EUR en BRL</p></article>
-          <article class="rate-card"><p class="rate-card__label">EUR / GBP</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">0,85648</p><p class="rate-card__unit">1 EUR en GBP</p></article>
+          <article class="rate-card"><p class="rate-card__label"><span class="rate-card__flag">🇺🇸</span>EUR / USD</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">1,1596</p><p class="rate-card__unit">1 EUR en USD</p></article>
+          <article class="rate-card"><p class="rate-card__label"><span class="rate-card__flag">🇦🇺</span>EUR / AUD</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">1,6191</p><p class="rate-card__unit">1 EUR en AUD</p></article>
+          <article class="rate-card"><p class="rate-card__label"><span class="rate-card__flag">🇧🇷</span>EUR / BRL</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">5,9972</p><p class="rate-card__unit">1 EUR en BRL</p></article>
+          <article class="rate-card"><p class="rate-card__label"><span class="rate-card__flag">🇬🇧</span>EUR / GBP</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">0,85648</p><p class="rate-card__unit">1 EUR en GBP</p></article>
         </div>
       </section>
       <footer><p>Los datos se publican únicamente en días hábiles del BCE.</p><p>Fuente: API oficial del Banco Central Europeo</p></footer>
     </main>
     <script>
-      const input=document.querySelector('#date'), notice=document.querySelector('#notice'), result=document.querySelector('#result-date'), button=document.querySelector('#query'), rates=document.querySelector('#rates');
+      const input=document.querySelector('#date'), notice=document.querySelector('#notice'), result=document.querySelector('#result-date'), button=document.querySelector('#query'), rates=document.querySelector('#rates'), currencySelect=document.querySelector('#currency'), addPair=document.querySelector('#add-pair');
       const formatter=new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'short',year:'numeric'});
-      const currencies=['USD','AUD','BRL','GBP'];
+      const availableCurrencies={USD:['🇺🇸','Dólar estadounidense'],AUD:['🇦🇺','Dólar australiano'],BRL:['🇧🇷','Real brasileño'],GBP:['🇬🇧','Libra esterlina'],CAD:['🇨🇦','Dólar canadiense'],CHF:['🇨🇭','Franco suizo'],JPY:['🇯🇵','Yen japonés'],NOK:['🇳🇴','Corona noruega'],SEK:['🇸🇪','Corona sueca'],DKK:['🇩🇰','Corona danesa'],PLN:['🇵🇱','Esloti polaco'],CZK:['🇨🇿','Corona checa'],HUF:['🇭🇺','Forinto húngaro'],RON:['🇷🇴','Leu rumano'],CNY:['🇨🇳','Yuan chino'],HKD:['🇭🇰','Dólar de Hong Kong'],INR:['🇮🇳','Rupia india'],KRW:['🇰🇷','Won surcoreano'],MXN:['🇲🇽','Peso mexicano'],NZD:['🇳🇿','Dólar neozelandés'],SGD:['🇸🇬','Dólar de Singapur'],ZAR:['🇿🇦','Rand sudafricano']};
+      const defaultCurrencies=['USD','AUD','BRL','GBP'];
+      let currencies=(()=>{try{const saved=JSON.parse(localStorage.getItem('bce-currencies'));const valid=saved?.filter(code=>availableCurrencies[code]);return valid?.length?valid:defaultCurrencies}catch{return defaultCurrencies}})();
       const numberFormat=new Intl.NumberFormat('es-ES',{minimumFractionDigits:4,maximumFractionDigits:5});
+      const saveCurrencies=()=>localStorage.setItem('bce-currencies',JSON.stringify(currencies));
+      const renderCurrencyOptions=()=>{currencySelect.innerHTML=Object.entries(availableCurrencies).filter(([code])=>!currencies.includes(code)).map(([code,[flag,name]])=>`<option value="${code}">${flag} ${code} · ${name}</option>`).join(''); addPair.disabled=!currencySelect.options.length;};
       const showRates=rows=>{
         const values=Object.fromEntries(rows.map(row=>[row.CURRENCY,Number(row.OBS_VALUE)]));
-        rates.innerHTML=currencies.map(currency=>`<article class="rate-card"><p class="rate-card__label">EUR / ${currency}</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">${numberFormat.format(values[currency])}</p><p class="rate-card__unit">1 EUR en ${currency}</p></article>`).join('');
+        rates.innerHTML=currencies.map(currency=>`<article class="rate-card"><p class="rate-card__label"><span class="rate-card__flag">${availableCurrencies[currency][0]}</span>EUR / ${currency}</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">${numberFormat.format(values[currency])}</p><p class="rate-card__unit">1 EUR en ${currency}</p></article>`).join('');
       };
       async function consult(){
         const selected=new Date(input.value+'T12:00:00');
@@ -81,7 +89,7 @@
         button.disabled=true; button.textContent='Consultando…';
         notice.innerHTML='<b>…</b><div>Consultando las cotizaciones oficiales del BCE.</div>';
         try {
-          const response=await fetch('/api/rates?date='+encodeURIComponent(input.value));
+          const response=await fetch('/api/rates?date='+encodeURIComponent(input.value)+'&currencies='+encodeURIComponent(currencies.join(',')));
           if(!response.ok) throw new Error('No se pudo obtener la cotización');
           const data=await response.json();
           showRates(data.rates.map(rate=>({CURRENCY:rate.currency,OBS_VALUE:rate.value})));
@@ -101,6 +109,8 @@
       }
       button.addEventListener('click',consult);
       input.addEventListener('change',consult);
+      addPair.addEventListener('click',()=>{if(!currencySelect.value)return; currencies.push(currencySelect.value); saveCurrencies(); renderCurrencyOptions(); consult();});
+      renderCurrencyOptions();
       consult();
     </script>
   </body>
