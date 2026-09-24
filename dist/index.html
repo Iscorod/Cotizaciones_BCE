@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Consulta de tipos de cambio oficiales del BCE." />
+    <title>Divisas BCE</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b3b60'/%3E%3Cpath d='M32 12c-11 0-20 9-20 20s9 20 20 20c7 0 13-3 17-8l-7-5c-2 3-6 5-10 5-7 0-12-5-12-12s5-12 12-12c4 0 8 2 10 5l7-5c-4-5-10-8-17-8Z' fill='%23f5c451'/%3E%3C/svg%3E" />
+    <style>
+      :root { --ink:#102a43; --navy:#0b3b60; --blue:#146c94; --aqua:#e7f5f8; --paper:#f7fafc; --line:#d9e2ec; --gold:#f5c451; --muted:#627d98; }
+      * { box-sizing:border-box; }
+      body { margin:0; min-width:320px; background:var(--paper); color:var(--ink); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      main { max-width:1060px; margin:0 auto; padding:42px 28px 60px; }
+      header { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; margin-bottom:38px; }
+      .brand { display:flex; align-items:center; gap:13px; color:var(--navy); font-weight:800; font-size:1.15rem; letter-spacing:-.02em; }
+      .mark { width:35px; height:35px; display:grid; place-items:center; background:var(--navy); color:var(--gold); border-radius:10px; font-size:1.45rem; }
+      h1 { margin:38px 0 8px; font-size:clamp(2rem, 4vw, 3.5rem); letter-spacing:-.055em; line-height:1; color:var(--navy); }
+      .intro { margin:0; color:var(--muted); font-size:1.06rem; line-height:1.55; max-width:600px; }
+      .source { color:var(--muted); font-size:.82rem; white-space:nowrap; padding-top:9px; }
+      .source span { display:inline-block; width:8px; height:8px; border-radius:50%; background:#2f855a; margin-right:7px; }
+      .panel { background:#fff; border:1px solid var(--line); box-shadow:0 20px 50px rgba(16,42,67,.08); border-radius:20px; overflow:hidden; }
+      .controls { display:flex; align-items:end; gap:16px; padding:26px; border-bottom:1px solid var(--line); }
+      label { display:block; font-size:.85rem; color:var(--muted); font-weight:700; margin-bottom:7px; }
+      input { appearance:none; border:1px solid #9fb3c8; border-radius:9px; padding:12px 13px; color:var(--ink); font:inherit; min-height:46px; }
+      button { min-height:46px; padding:0 18px; border:0; border-radius:9px; background:var(--navy); color:#fff; font:700 .95rem inherit; cursor:pointer; }
+      button:hover { background:var(--blue); }
+      .data-note { margin-left:auto; text-align:right; color:var(--muted); font-size:.84rem; line-height:1.4; }
+      .data-note strong { display:block; color:var(--ink); }
+      .notice { display:flex; align-items:flex-start; gap:11px; margin:22px 26px 0; padding:14px 16px; background:var(--aqua); border-radius:11px; color:#174e63; font-size:.93rem; line-height:1.45; }
+      .notice b { font-size:1.1rem; }
+      .rates { padding:10px 26px 26px; }
+      table { width:100%; border-collapse:collapse; }
+      th { text-align:left; padding:21px 12px 10px; color:var(--muted); font-size:.77rem; letter-spacing:.06em; text-transform:uppercase; }
+      td { padding:17px 12px; border-top:1px solid var(--line); font-size:1rem; }
+      td:first-child { font-weight:750; color:var(--navy); }
+      td:nth-child(2) { font-variant-numeric:tabular-nums; font-weight:700; font-size:1.15rem; }
+      .unit { color:var(--muted); font-size:.9rem; }
+      footer { margin-top:24px; display:flex; justify-content:space-between; gap:20px; color:var(--muted); font-size:.82rem; }
+      @media (max-width:680px) { main{padding:25px 16px 40px} header{margin-bottom:27px}.source{display:none}h1{margin-top:26px}.controls{padding:20px;display:grid;grid-template-columns:1fr 1fr}.controls button{grid-column:span 2}.data-note{margin:0;text-align:left}.rates{padding:8px 14px 18px}th,td{padding-left:7px;padding-right:7px}th:nth-child(3),td:nth-child(3){display:none}footer{display:block}footer p{margin:8px 0} }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <div class="brand"><div class="mark">€</div>Divisas BCE</div>
+          <h1>Consulta de cotizaciones</h1>
+          <p class="intro">Tipos de cambio oficiales publicados por el Banco Central Europeo.</p>
+        </div>
+        <div class="source"><span></span>Fuente: Banco Central Europeo</div>
+      </header>
+      <section class="panel" aria-label="Consulta de cotizaciones">
+        <div class="controls">
+          <div><label for="date">Fecha a consultar</label><input id="date" type="date" value="2026-09-24" /></div>
+          <button id="query" type="button">Consultar</button>
+          <div class="data-note"><strong id="result-date">Datos del 24 sep 2026</strong><span id="update">Última actualización: 10:37</span></div>
+        </div>
+        <div class="notice" id="notice"><b>ℹ</b><div>Las cotizaciones corresponden a la fecha seleccionada.</div></div>
+        <div class="rates">
+          <table>
+            <thead><tr><th>Par</th><th>Valor BCE</th><th>Referencia</th></tr></thead>
+            <tbody id="rates">
+              <tr><td>EUR / USD</td><td>1,1596</td><td class="unit">1 EUR en USD</td></tr>
+              <tr><td>EUR / AUD</td><td>1,6191</td><td class="unit">1 EUR en AUD</td></tr>
+              <tr><td>EUR / BRL</td><td>5,9972</td><td class="unit">1 EUR en BRL</td></tr>
+              <tr><td>EUR / GBP</td><td>0,85648</td><td class="unit">1 EUR en GBP</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <footer><p>Los datos se publican únicamente en días hábiles del BCE.</p><p>Boceto de la app web · Datos de ejemplo</p></footer>
+    </main>
+    <script>
+      const input=document.querySelector('#date'), notice=document.querySelector('#notice'), result=document.querySelector('#result-date');
+      const formatter=new Intl.DateTimeFormat('es-ES',{day:'2-digit',month:'short',year:'numeric'});
+      document.querySelector('#query').addEventListener('click',()=>{
+        const selected=new Date(input.value+'T12:00:00'); if(Number.isNaN(selected))return;
+        const used=new Date(selected); while(used.getDay()===0||used.getDay()===6) used.setDate(used.getDate()-1);
+        const exact=used.getTime()===selected.getTime(); result.textContent='Datos del '+formatter.format(used);
+        notice.innerHTML=exact?'<b>ℹ</b><div>Las cotizaciones corresponden a la fecha seleccionada.</div>':'<b>↳</b><div><strong>La fecha seleccionada no tiene publicación del BCE.</strong><br>Se muestra el valor del último día hábil disponible: '+formatter.format(used)+'.</div>';
+      });
+    </script>
+  </body>
+</html>
