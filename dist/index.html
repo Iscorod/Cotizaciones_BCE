@@ -39,6 +39,11 @@
       .rate-card__unit { margin:8px 0 0; color:var(--muted); font-size:.77rem; }
       .rate-card__date { margin:8px 0 0; color:var(--muted); font-size:.75rem; line-height:1.35; }
       .rate-card__date--fallback { color:#9c5b11; }
+      .rate-card__variation-label { margin:13px 0 3px; color:var(--muted); font-size:.68rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
+      .rate-card__variation { margin:0; font-size:.96rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      .rate-card__variation--up { color:#18794e; }
+      .rate-card__variation--down { color:#b42318; }
+      .rate-card__variation--flat { color:var(--muted); }
       .rate-card__remove { position:absolute; top:10px; right:10px; display:grid; place-items:center; width:24px; min-height:24px; padding:0; border:1px solid var(--line); border-radius:50%; background:#fff; color:var(--muted); font-size:1rem; line-height:1; }
       .rate-card__remove:hover { border-color:#d64545; background:#fff5f5; color:#b42318; }
       .rate-card--message { grid-column:1 / -1; color:var(--muted); }
@@ -81,15 +86,20 @@
       const fallbackCurrencies=['USD','AUD','BRL','GBP'];
       let currencies=[];
       const numberFormat=new Intl.NumberFormat('es-ES',{minimumFractionDigits:4,maximumFractionDigits:5});
+      const percentFormat=new Intl.NumberFormat('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
       const saveCurrencies=()=>localStorage.setItem('bce-currencies',JSON.stringify(currencies));
       const renderCurrencyOptions=()=>{currencySelect.innerHTML=Object.entries(availableCurrencies).filter(([code])=>!currencies.includes(code)).map(([code,name])=>`<option value="${code}">${code} · ${name}</option>`).join(''); addPair.disabled=!currencySelect.options.length;};
       const showRates=rows=>{
-        const values=Object.fromEntries(rows.map(row=>[row.CURRENCY,{value:Number(row.OBS_VALUE),date:row.DATE}]));
+        const values=Object.fromEntries(rows.map(row=>[row.CURRENCY,{value:Number(row.OBS_VALUE),date:row.DATE,variation:row.VARIATION,previousDate:row.PREVIOUS_DATE}]));
         rates.innerHTML=currencies.map(currency=>{
           const rate=values[currency];
-          const fallback=rate && rate.date!==input.value;
-          const dateText=rate ? (fallback ? `Último dato disponible: ${formatter.format(new Date(rate.date+'T12:00:00'))}` : 'Dato de la fecha seleccionada') : 'Sin dato disponible';
-          return `<article class="rate-card"><button class="rate-card__remove" type="button" data-remove-currency="${currency}" aria-label="Eliminar EUR / ${currency}" title="Eliminar par">×</button><p class="rate-card__label">EUR / ${currency}</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">${rate ? numberFormat.format(rate.value) : '—'}</p><p class="rate-card__unit">1 EUR en ${currency}</p><p class="rate-card__date${fallback?' rate-card__date--fallback':''}">${dateText}</p></article>`;
+          const fallback=rate?.date && rate.date!==input.value;
+          const dateText=rate ? (rate.date ? (fallback ? `Último dato disponible: ${formatter.format(new Date(rate.date+'T12:00:00'))}` : 'Dato de la fecha seleccionada') : 'Sin dato disponible') : 'Sin dato disponible';
+          const variation=rate?.variation;
+          const variationClass=variation == null ? 'flat' : variation > 0 ? 'up' : variation < 0 ? 'down' : 'flat';
+          const variationText=variation == null ? 'n.d.' : `${variation > 0 ? '+' : ''}${percentFormat.format(variation)}%`;
+          const variationLabel=rate?.previousDate ? `Variación vs. ${formatter.format(new Date(rate.previousDate+'T12:00:00'))}` : 'Variación vs. dato anterior';
+          return `<article class="rate-card"><button class="rate-card__remove" type="button" data-remove-currency="${currency}" aria-label="Eliminar EUR / ${currency}" title="Eliminar par">×</button><p class="rate-card__label">EUR / ${currency}</p><p class="rate-card__title">Valor BCE</p><p class="rate-card__value">${rate?.date ? numberFormat.format(rate.value) : '—'}</p><p class="rate-card__unit">1 EUR en ${currency}</p><p class="rate-card__date${fallback?' rate-card__date--fallback':''}">${dateText}</p><p class="rate-card__variation-label">${variationLabel}</p><p class="rate-card__variation rate-card__variation--${variationClass}">${variationText}</p></article>`;
         }).join('');
       };
       async function consult(){
@@ -102,7 +112,7 @@
           const response=await fetch('/api/rates?date='+encodeURIComponent(input.value)+'&currencies='+encodeURIComponent(currencies.join(',')));
           if(!response.ok) throw new Error('No se pudo obtener la cotización');
           const data=await response.json();
-          showRates(data.rates.map(rate=>({CURRENCY:rate.currency,OBS_VALUE:rate.value,DATE:rate.date})));
+          showRates(data.rates.map(rate=>({CURRENCY:rate.currency,OBS_VALUE:rate.value,DATE:rate.date,VARIATION:rate.variation,PREVIOUS_DATE:rate.previousDate})));
           result.textContent='Cotizaciones por divisa';
           notice.hidden=true;
         } catch(error) {

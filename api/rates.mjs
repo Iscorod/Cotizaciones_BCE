@@ -49,9 +49,17 @@ export default {
         (ratesByCurrency[row.CURRENCY] ||= []).push({ date: row.TIME_PERIOD, currency: row.CURRENCY, value: Number(row.OBS_VALUE) });
       }
 
-      const rates = requestedCurrencies.map((currency) =>
-        (ratesByCurrency[currency] || []).sort((a, b) => b.date.localeCompare(a.date))[0] || { currency, value: null, date: null }
-      );
+      const rates = requestedCurrencies.map((currency) => {
+        const observations = (ratesByCurrency[currency] || []).sort((a, b) => b.date.localeCompare(a.date));
+        const current = observations[0];
+        const previous = observations[1];
+        if (!current) return { currency, value: null, date: null, previousDate: null, variation: null };
+        return {
+          ...current,
+          previousDate: previous?.date || null,
+          variation: previous ? ((current.value - previous.value) / previous.value) * 100 : null,
+        };
+      });
       if (rates.every((rate) => rate.value === null)) return json({ error: "No hay datos del BCE para esa fecha." }, 404);
 
       return json({ requestedDate, rates });
