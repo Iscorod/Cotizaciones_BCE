@@ -64,7 +64,7 @@
       </header>
       <section class="panel" aria-label="Consulta de cotizaciones">
         <div class="controls">
-          <div><label for="date">Fecha a consultar</label><input id="date" type="date" value="2026-09-24" /></div>
+          <div><label for="date">Fecha a consultar</label><input id="date" type="date" /></div>
           <button id="query" type="button">Consultar</button>
           <div class="pair-picker"><label for="currency">Añadir par EUR /</label><div class="pair-picker__row"><select id="currency" aria-label="Divisa a añadir"></select><button id="add-pair" type="button">Añadir</button></div></div>
           <div class="data-note"><strong id="result-date">Datos del 24 sep 2026</strong><span id="update">Última actualización: 10:37</span></div>
@@ -87,6 +87,7 @@
       let currencies=[];
       const numberFormat=new Intl.NumberFormat('es-ES',{minimumFractionDigits:4,maximumFractionDigits:5});
       const percentFormat=new Intl.NumberFormat('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+      const setToday=()=>{const now=new Date();input.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;};
       const saveCurrencies=()=>localStorage.setItem('bce-currencies',JSON.stringify(currencies));
       const renderCurrencyOptions=()=>{currencySelect.innerHTML=Object.entries(availableCurrencies).filter(([code])=>!currencies.includes(code)).map(([code,name])=>`<option value="${code}">${code} · ${name}</option>`).join(''); addPair.disabled=!currencySelect.options.length;};
       const showRates=rows=>{
@@ -95,7 +96,7 @@
           const rate=values[currency];
           const fallback=rate?.date && rate.date!==input.value;
           const dateText=rate ? (rate.date ? (fallback ? `Último dato disponible: ${formatter.format(new Date(rate.date+'T12:00:00'))}` : 'Dato de la fecha seleccionada') : 'Sin dato disponible') : 'Sin dato disponible';
-          const variation=rate?.variation;
+          const variation=Number.isFinite(rate?.variation) ? rate.variation : null;
           const variationClass=variation == null ? 'flat' : variation > 0 ? 'up' : variation < 0 ? 'down' : 'flat';
           const variationText=variation == null ? 'n.d.' : `${variation > 0 ? '+' : ''}${percentFormat.format(variation)}%`;
           const variationLabel=rate?.previousDate ? `Variación vs. ${formatter.format(new Date(rate.previousDate+'T12:00:00'))}` : 'Variación vs. dato anterior';
@@ -143,6 +144,7 @@
         renderCurrencyOptions();
         consult();
       }
+      setToday();
       loadCurrencies();
     </script>
   </body>
