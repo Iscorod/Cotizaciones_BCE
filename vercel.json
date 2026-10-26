@@ -1,4 +1,9 @@
 {
   "outputDirectory": "dist",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "functions": {
+    "api/market-brief.mjs": {
+      "maxDuration": 30
+    }
+  }
 }
