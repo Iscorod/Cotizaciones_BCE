@@ -1,0 +1,7 @@
+[
+  {"date":"2026-10-27","currencies":["USD"],"title":"Reunión FOMC","type":"Política monetaria","source":"Federal Reserve","url":"https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"},
+  {"date":"2026-10-29","currencies":["EUR"],"title":"Decisión de política monetaria del BCE","type":"Política monetaria","source":"BCE","url":"https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html"},
+  {"date":"2026-11-05","currencies":["GBP"],"title":"Decisión del Monetary Policy Committee","type":"Política monetaria","source":"Bank of England","url":"https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates"},
+  {"date":"2026-12-08","currencies":["USD"],"title":"Reunión FOMC","type":"Política monetaria","source":"Federal Reserve","url":"https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"},
+  {"date":"2026-12-17","currencies":["EUR","GBP"],"title":"Decisión de tipos BCE / MPC","type":"Política monetaria","source":"BCE y Bank of England","url":"https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html"}
+]
