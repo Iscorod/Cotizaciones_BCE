@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Cotizaciones de mercado de pares Forex EUR/USD, EUR/AUD, EUR/BRL y EUR/GBP. Fuente: Financial Modeling Prep o Twelve Data." />
+    <title>Mercado Forex · Divisas BCE</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b3b60'/%3E%3Cpath d='M32 12c-11 0-20 9-20 20s9 20 20 20c7 0 13-3 17-8l-7-5c-2 3-6 5-10 5-7 0-12-5-12-12s5-12 12-12c4 0 8 2 10 5l7-5c-4-5-10-8-17-8Z' fill='%23f5c451'/%3E%3C/svg%3E" />
+    <style>
+      :root { --ink:#102a43; --navy:#0b3b60; --blue:#146c94; --aqua:#e7f5f8; --paper:#f7fafc; --line:#d9e2ec; --gold:#f5c451; --muted:#627d98; --green:#18794e; --red:#b42318; }
+      * { box-sizing:border-box; }
+      body { margin:0; min-width:320px; background:var(--paper); color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+      main { max-width:1060px; min-height:100svh; margin:0 auto; padding:26px 28px 28px; }
+      header { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; margin-bottom:22px; }
+      .brand { display:flex; align-items:center; gap:13px; color:var(--navy); font-weight:800; font-size:1.15rem; letter-spacing:-.02em; }
+      .mark { width:35px; height:35px; display:grid; place-items:center; background:var(--navy); color:var(--gold); border-radius:10px; font-size:1.45rem; }
+      .nav { display:flex; gap:6px; margin-top:22px; flex-wrap:wrap; }
+      .nav a { padding:7px 11px; border-radius:8px; color:var(--muted); font-size:.85rem; font-weight:700; text-decoration:none; }
+      .nav a[aria-current='page'] { background:var(--navy); color:#fff; }
+      h1 { margin:23px 0 6px; font-size:clamp(1.75rem,3vw,2.35rem); letter-spacing:-.05em; line-height:1.05; color:var(--navy); }
+      .intro { margin:0; color:var(--muted); font-size:.98rem; line-height:1.5; max-width:660px; }
+      .source { margin:9px 0 0; color:var(--muted); font-size:.82rem; text-align:right; white-space:nowrap; }
+      .source::before { content:''; display:inline-block; width:8px; height:8px; border-radius:50%; background:#2f855a; margin-right:7px; }
+      .panel { background:#fff; border:1px solid var(--line); box-shadow:0 20px 50px rgba(16,42,67,.08); border-radius:20px; overflow:hidden; }
+      .controls { display:flex; align-items:end; flex-wrap:wrap; gap:16px; padding:18px 22px; border-bottom:1px solid var(--line); }
+      label { display:block; font-size:.85rem; color:var(--muted); font-weight:700; margin-bottom:7px; }
+      select { border:1px solid #9fb3c8; border-radius:9px; padding:12px 13px; color:var(--ink); background:#fff; font:inherit; min-height:46px; width:100%; }
+      button { min-height:46px; padding:0 18px; border:0; border-radius:9px; background:var(--navy); color:#fff; font:inherit; font-size:.93rem; font-weight:700; cursor:pointer; }
+      button:hover:not(:disabled) { background:var(--blue); }
+      button:disabled { opacity:.55; cursor:not-allowed; }
+      .pair-picker { flex:1; min-width:210px; }
+      .pair-picker__row { display:flex; gap:7px; }
+      .pair-picker__row button { white-space:nowrap; }
+      .data-note { margin-left:auto; text-align:right; color:var(--muted); font-size:.82rem; line-height:1.5; }
+      .data-note strong { display:block; color:var(--ink); }
+      .notice { display:flex; align-items:flex-start; gap:11px; margin:14px 22px 0; padding:12px 14px; background:var(--aqua); border-radius:11px; color:#174e63; font-size:.88rem; line-height:1.5; }
+      .notice--warning { background:#fff3df; color:#875410; }
+      .notice[hidden] { display:none; }
+      .notice b { font-size:1.1rem; }
+      .rates { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; padding:18px 22px 22px; }
+      .rate-card { min-width:0; padding:17px 16px; border:1px solid var(--line); border-radius:13px; background:#fff; box-shadow:0 4px 12px rgba(16,42,67,.04); position:relative; }
+      .rate-card__label { margin:0 30px 12px 0; color:var(--navy); font-size:.93rem; font-weight:800; }
+      .rate-card__title { margin:0 0 4px; color:var(--muted); font-size:.7rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
+      .rate-card__value { margin:0; color:var(--ink); font-size:1.38rem; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.03em; }
+      .rate-card__unit { margin:8px 0 0; color:var(--muted); font-size:.76rem; }
+      .rate-card__variation { margin:13px 0; font-size:1rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      .rate-card__variation--up { color:var(--green); }
+      .rate-card__variation--down { color:var(--red); }
+      .rate-card__variation--flat { color:var(--muted); }
+      .rate-card__stats { border-top:1px solid var(--line); padding-top:11px; margin-top:12px; display:grid; gap:8px; }
+      .rate-card__stat { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:.74rem; }
+      .rate-card__stat span { color:var(--muted); }
+      .rate-card__stat strong { font-variant-numeric:tabular-nums; font-weight:750; }
+      .rate-card__date { margin:12px 0 0; color:var(--muted); font-size:.71rem; line-height:1.4; }
+      .rate-card__error { margin:10px 0 0; color:#875410; font-size:.8rem; line-height:1.45; min-height:95px; }
+      .rate-card__remove { position:absolute; right:10px; top:10px; width:25px; min-height:25px; padding:0; border:1px solid var(--line); border-radius:50%; background:#fff; color:var(--muted); font-size:1rem; line-height:1; }
+      .rate-card__remove:hover:not(:disabled) { border-color:#d64545; background:#fff5f5; color:var(--red); }
+      .rate-card--message { grid-column:1/-1; color:var(--muted); line-height:1.6; }
+      .footnote { padding:0 22px 20px; color:var(--muted); font-size:.78rem; line-height:1.5; }
+      footer { margin-top:15px; display:flex; justify-content:space-between; gap:20px; color:var(--muted); font-size:.77rem; }
+      @media (max-width:900px) { .rates { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+      @media (max-width:760px) { main{padding:22px 16px 28px} header{display:block}.source{text-align:left;white-space:normal}.controls{padding:18px;gap:12px}.data-note{margin:0;text-align:left;width:100%}.rates{padding:16px}.footnote{padding:0 16px 20px}footer{display:block}footer p{margin:7px 0} }
+      @media (max-width:430px) { .rates{grid-template-columns:1fr}.pair-picker{width:100%}.controls #refresh{width:100%} }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <div class="brand"><div class="mark">€</div>Divisas BCE</div>
+          <nav class="nav" aria-label="Navegación principal"><a href="index.html">Consulta</a><a href="analisis.html">Análisis</a><a href="mercado.html" aria-current="page">Mercado Forex</a></nav>
+          <h1>Cotizaciones de mercado</h1>
+          <p class="intro">Precios intradía de pares de divisas. Consulta independiente de los tipos oficiales de referencia del BCE.</p>
+        </div>
+        <div class="source" id="source">Fuente de mercado: por configurar</div>
+      </header>
+      <section class="panel" aria-label="Cotizaciones Forex">
+        <div class="controls">
+          <button id="refresh" type="button">Actualizar precios</button>
+          <div class="pair-picker"><label for="currency">Añadir par EUR / (máximo 4)</label><div class="pair-picker__row"><select id="currency" aria-label="Divisa para añadir"></select><button id="add-pair" type="button">Añadir</button></div></div>
+          <div class="data-note"><strong id="result-status">Esperando cotizaciones</strong><span id="update">Actualización automática cada 30 min</span></div>
+        </div>
+        <div class="notice" id="notice" hidden role="status" aria-live="polite"></div>
+        <div class="rates" id="rates" aria-live="polite"><article class="rate-card rate-card--message">Consultando el proveedor de cotizaciones…</article></div>
+        <div class="footnote">La actualización se solicita cada 30 minutos mientras la página está abierta. Vercel puede mantener una copia hasta 30 minutos para reducir el consumo de API. Las cotizaciones pueden ser diferentes de las publicadas por el BCE. Sin recomendaciones de compra o venta.</div>
+      </section>
+      <footer><p>Para utilizar estos datos en una web pública, comprueba la licencia de visualización del proveedor.</p><p><a href="https://site.financialmodelingprep.com/developer/docs/stable/forex-quote" rel="noopener noreferrer" target="_blank">Documentación de FMP</a></p></footer>
+    </main>
+    <script>
+      const availableCurrencies={USD:'Dólar estadounidense',AUD:'Dólar australiano',BRL:'Real brasileño',GBP:'Libra esterlina',CAD:'Dólar canadiense',CHF:'Franco suizo',JPY:'Yen japonés',NOK:'Corona noruega',SEK:'Corona sueca',DKK:'Corona danesa',PLN:'Esloti polaco',CZK:'Corona checa',HUF:'Forinto húngaro',RON:'Leu rumano',CNY:'Yuan chino',HKD:'Dólar de Hong Kong',INR:'Rupia india',KRW:'Won surcoreano',MXN:'Peso mexicano',NZD:'Dólar neozelandés',SGD:'Dólar de Singapur',ZAR:'Rand sudafricano'};
+      const defaults=['USD','AUD','BRL','GBP'];
+      const maxPairs=4;
+      const refreshEveryMs=30*60*1000;
+      const rates=document.querySelector('#rates'), currencySelect=document.querySelector('#currency'), addPair=document.querySelector('#add-pair'), refresh=document.querySelector('#refresh'), notice=document.querySelector('#notice'), statusText=document.querySelector('#result-status'), update=document.querySelector('#update'), source=document.querySelector('#source');
+      const numberFormat=new Intl.NumberFormat('es-ES',{minimumFractionDigits:2,maximumFractionDigits:5});
+      const percentFormat=new Intl.NumberFormat('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+      const dateFormat=new Intl.DateTimeFormat('es-ES',{dateStyle:'short',timeStyle:'short'});
+      let currencies=defaults.slice(), lastFetch=0, requestId=0;
+      const asNumber=value=>value===null||value===undefined||value===''?null:Number.isFinite(Number(value))?Number(value):null;
+      const formatted=value=>asNumber(value)===null?'—':numberFormat.format(Number(value));
+      const sanitize=text=>String(text||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+      function setNotice(message,warning=false){notice.hidden=!message;notice.classList.toggle('notice--warning',warning);notice.textContent=message||'';}
+      function showOptions(){
+        currencySelect.innerHTML=Object.entries(availableCurrencies).filter(([code])=>!currencies.includes(code)).map(([code,name])=>`<option value="${code}">${code} · ${name}</option>`).join('');
+        addPair.disabled=currencies.length>=maxPairs||!currencySelect.options.length;
+        currencySelect.disabled=addPair.disabled;
+      }
+      function card(currency,quote){
+        const symbol='EUR'+currency, found=quote?.status==='ok';
+        const remove=`<button class="rate-card__remove" type="button" data-remove="${currency}" aria-label="Eliminar EUR / ${currency}" title="Eliminar par">×</button>`;
+        if(!found) return `<article class="rate-card">${remove}<p class="rate-card__label">EUR / ${currency}</p><p class="rate-card__title">Sin cotización</p><p class="rate-card__value">—</p><p class="rate-card__error">${sanitize(quote?.message||'No se ha recibido un precio para este par.')}</p></article>`;
+        const change=asNumber(quote.changePercent), cls=change===null?'flat':change>0?'up':change<0?'down':'flat';
+        const changeText=change===null?'Variación: n.d.':`${change>0?'+':''}${percentFormat.format(change)} %`;
+        let quoteTime='Hora de la cotización no facilitada';
+        if(quote.timestamp&&!Number.isNaN(new Date(quote.timestamp).getTime())) quoteTime='Cotización: '+dateFormat.format(new Date(quote.timestamp));
+        else if(quote.providerDatetime) quoteTime='Hora indicada por el proveedor: '+sanitize(quote.providerDatetime);
+        return `<article class="rate-card">${remove}<p class="rate-card__label">EUR / ${currency}</p><p class="rate-card__title">Precio de mercado</p><p class="rate-card__value">${formatted(quote.price)}</p><p class="rate-card__unit">1 EUR en ${currency}</p><p class="rate-card__variation rate-card__variation--${cls}">${changeText}</p><div class="rate-card__stats"><div class="rate-card__stat"><span>Máximo diario</span><strong>${formatted(quote.dayHigh)}</strong></div><div class="rate-card__stat"><span>Mínimo diario</span><strong>${formatted(quote.dayLow)}</strong></div><div class="rate-card__stat"><span>Cierre anterior</span><strong>${formatted(quote.previousClose)}</strong></div></div><p class="rate-card__date">${quoteTime}</p></article>`;
+      }
+      async function loadQuotes(){
+        const currentRequest=++requestId;
+        const symbols=currencies.map(code=>'EUR'+code);
+        refresh.disabled=true;refresh.textContent='Actualizando…';
+        statusText.textContent='Consultando mercado';
+        setNotice('Consultando las cotizaciones de mercado…');
+        try{
+          const response=await fetch('/api/forex?symbols='+encodeURIComponent(symbols.join(',')),{headers:{Accept:'application/json'}});
+          const data=await response.json();
+          if(currentRequest!==requestId)return;
+          if(!Array.isArray(data.quotes))throw new Error(data.error||'No se han podido obtener los datos.');
+          const bySymbol=Object.fromEntries(data.quotes.map(item=>[item.symbol,item]));
+          rates.innerHTML=currencies.map(currency=>card(currency,bySymbol['EUR'+currency])).join('');
+          const good=data.quotes.filter(item=>item.status==='ok').length;
+          source.textContent='Fuente de mercado: '+(data.provider==='fmp'?'Financial Modeling Prep':'Twelve Data');
+          statusText.textContent=`${good} de ${currencies.length} pares disponibles`;
+          update.textContent='Consulta: '+dateFormat.format(new Date())+' · cada 30 min';
+          const partialError=data.quotes.some(item=>item.status!=='ok');
+          setNotice(partialError?'Algunos pares no están incluidos en tu plan o no tienen datos. Revisa cada tarjeta.':'',partialError);
+          lastFetch=Date.now();
+        } catch(error){
+          if(currentRequest!==requestId)return;
+          rates.innerHTML='<article class="rate-card rate-card--message">No se han podido cargar cotizaciones. Comprueba la configuración de la API y vuelve a intentarlo.</article>';
+          statusText.textContent='Datos no disponibles';
+          setNotice(error.message||'Error al consultar Forex.',true);
+          lastFetch=Date.now();
+        } finally{
+          if(currentRequest===requestId){refresh.disabled=false;refresh.textContent='Actualizar precios';}
+        }
+      }
+      function save(){try{localStorage.setItem('forex-market-currencies',JSON.stringify(currencies));}catch{}}
+      function initialCurrencies(){
+        try{
+          const saved=JSON.parse(localStorage.getItem('forex-market-currencies')||'null');
+          const bce=JSON.parse(localStorage.getItem('bce-currencies')||'null');
+          const selected=Array.isArray(saved)&&saved.length?saved:Array.isArray(bce)&&bce.length?bce:defaults;
+          const valid=[...new Set(selected.filter(code=>typeof code==='string'&&Object.hasOwn(availableCurrencies,code)))].slice(0,maxPairs);
+          if(valid.length)currencies=valid;
+        }catch{}
+        showOptions();loadQuotes();
+      }
+      refresh.addEventListener('click',loadQuotes);
+      addPair.addEventListener('click',()=>{
+        if(!currencySelect.value||currencies.length>=maxPairs)return;
+        currencies.push(currencySelect.value);save();showOptions();loadQuotes();
+      });
+      rates.addEventListener('click',event=>{
+        const remove=event.target.closest('[data-remove]');if(!remove)return;
+        if(currencies.length<=1){setNotice('Debe quedar al menos un par de divisas.',true);return;}
+        currencies=currencies.filter(code=>code!==remove.dataset.remove);
+        save();showOptions();loadQuotes();
+      });
+      setInterval(()=>{if(!document.hidden)loadQuotes();},refreshEveryMs);
+      document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-lastFetch>refreshEveryMs)loadQuotes();});
+      initialCurrencies();
+    </script>
+  </body>
+</html>
