@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Cotizaciones de mercado de pares Forex EUR/USD, EUR/AUD, EUR/BRL y EUR/GBP. Fuente: Financial Modeling Prep o Twelve Data." />
+    <meta name="description" content="Cotizaciones de mercado de pares Forex EUR/USD, EUR/AUD, EUR/BRL y EUR/GBP. Fuente: Twelve Data (o FMP como alternativa)." />
     <title>Mercado Forex · Divisas BCE</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b3b60'/%3E%3Cpath d='M32 12c-11 0-20 9-20 20s9 20 20 20c7 0 13-3 17-8l-7-5c-2 3-6 5-10 5-7 0-12-5-12-12s5-12 12-12c4 0 8 2 10 5l7-5c-4-5-10-8-17-8Z' fill='%23f5c451'/%3E%3C/svg%3E" />
     <style>
@@ -43,11 +43,17 @@
       .rate-card__title { margin:0 0 4px; color:var(--muted); font-size:.7rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
       .rate-card__value { margin:0; color:var(--ink); font-size:1.38rem; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.03em; }
       .rate-card__unit { margin:8px 0 0; color:var(--muted); font-size:.76rem; }
-      .rate-card__variation { margin:13px 0; font-size:1rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      .rate-card__variation { margin:0; font-size:.97rem; font-weight:800; font-variant-numeric:tabular-nums; }
+      .rate-card__comparisons { margin-top:13px; padding:12px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); display:grid; gap:11px; }
+      .rate-card__comparison { display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+      .rate-card__comparison-label { color:var(--muted); font-size:.78rem; font-weight:700; }
+      .rate-card__comparison-value { text-align:right; }
+      .rate-card__history-error { margin:10px 0 0; font-size:.72rem; line-height:1.45; color:#875410; }
+      .rate-card__date--secondary { margin-top:5px; }
       .rate-card__variation--up { color:var(--green); }
       .rate-card__variation--down { color:var(--red); }
       .rate-card__variation--flat { color:var(--muted); }
-      .rate-card__stats { border-top:1px solid var(--line); padding-top:11px; margin-top:12px; display:grid; gap:8px; }
+      .rate-card__stats { padding-top:3px; margin-top:11px; display:grid; gap:8px; }
       .rate-card__stat { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:.74rem; }
       .rate-card__stat span { color:var(--muted); }
       .rate-card__stat strong { font-variant-numeric:tabular-nums; font-weight:750; }
@@ -70,7 +76,7 @@
           <div class="brand"><div class="mark">€</div>Divisas BCE</div>
           <nav class="nav" aria-label="Navegación principal"><a href="index.html">Consulta</a><a href="analisis.html">Análisis</a><a href="mercado.html" aria-current="page">Mercado Forex</a></nav>
           <h1>Cotizaciones de mercado</h1>
-          <p class="intro">Precios intradía de pares de divisas. Consulta independiente de los tipos oficiales de referencia del BCE.</p>
+          <p class="intro">Precios intradía de pares de divisas con variación frente a hace 1 hora, 24 horas y 7 días. Datos independientes del tipo de referencia oficial del BCE.</p>
         </div>
         <div class="source" id="source">Fuente de mercado: por configurar</div>
       </header>
@@ -82,9 +88,9 @@
         </div>
         <div class="notice" id="notice" hidden role="status" aria-live="polite"></div>
         <div class="rates" id="rates" aria-live="polite"><article class="rate-card rate-card--message">Consultando el proveedor de cotizaciones…</article></div>
-        <div class="footnote">La actualización se solicita cada 30 minutos mientras la página está abierta. Vercel puede mantener una copia hasta 30 minutos para reducir el consumo de API. Las cotizaciones pueden ser diferentes de las publicadas por el BCE. Sin recomendaciones de compra o venta.</div>
+        <div class="footnote">Comparativas calculadas con el precio de mercado y los cierres históricos de velas de 15 minutos más próximos anteriores a 1 h, 24 h y 7 días. Puede existir una diferencia de hasta 15 minutos con la hora exacta. Si no había mercado en esa franja, se indica «Sin dato». Actualización cada 30 minutos mientras la página está abierta; la caché de Vercel puede durar 30 minutos. No es streaming ni asesoramiento financiero.</div>
       </section>
-      <footer><p>Para utilizar estos datos en una web pública, comprueba la licencia de visualización del proveedor.</p><p><a href="https://site.financialmodelingprep.com/developer/docs/stable/forex-quote" rel="noopener noreferrer" target="_blank">Documentación de FMP</a></p></footer>
+      <footer><p>Para utilizar estos datos en una web pública, comprueba la licencia de visualización del proveedor.</p><p><a href="https://twelvedata.com/docs/market-data/time-series" rel="noopener noreferrer" target="_blank">Documentación de Twelve Data</a></p></footer>
     </main>
     <script>
       const availableCurrencies={USD:'Dólar estadounidense',AUD:'Dólar australiano',BRL:'Real brasileño',GBP:'Libra esterlina',CAD:'Dólar canadiense',CHF:'Franco suizo',JPY:'Yen japonés',NOK:'Corona noruega',SEK:'Corona sueca',DKK:'Corona danesa',PLN:'Esloti polaco',CZK:'Corona checa',HUF:'Forinto húngaro',RON:'Leu rumano',CNY:'Yuan chino',HKD:'Dólar de Hong Kong',INR:'Rupia india',KRW:'Won surcoreano',MXN:'Peso mexicano',NZD:'Dólar neozelandés',SGD:'Dólar de Singapur',ZAR:'Rand sudafricano'};
@@ -105,16 +111,25 @@
         addPair.disabled=currencies.length>=maxPairs||!currencySelect.options.length;
         currencySelect.disabled=addPair.disabled;
       }
+      function variation(horizon,entry){
+        const percent=asNumber(entry?.percent);
+        const cls=percent===null?'flat':percent>0?'up':percent<0?'down':'flat';
+        const text=percent===null?'Sin dato':`${percent>0?'+':''}${percentFormat.format(percent)} %`;
+        const hint=entry?.referenceAt&&asNumber(entry.referencePrice)!==null
+          ?`Referencia: ${dateFormat.format(new Date(entry.referenceAt))}; precio ${formatted(entry.referencePrice)}`
+          :'No hay cotización histórica cercana a esta hora; puede deberse a cierre de mercado o datos no disponibles.';
+        return `<div class="rate-card__comparison"><span class="rate-card__comparison-label">${horizon}</span><strong class="rate-card__variation rate-card__variation--${cls} rate-card__comparison-value" title="${sanitize(hint)}">${text}</strong></div>`;
+      }
       function card(currency,quote){
-        const symbol='EUR'+currency, found=quote?.status==='ok';
+        const found=quote?.status==='ok';
         const remove=`<button class="rate-card__remove" type="button" data-remove="${currency}" aria-label="Eliminar EUR / ${currency}" title="Eliminar par">×</button>`;
-        if(!found) return `<article class="rate-card">${remove}<p class="rate-card__label">EUR / ${currency}</p><p class="rate-card__title">Sin cotización</p><p class="rate-card__value">—</p><p class="rate-card__error">${sanitize(quote?.message||'No se ha recibido un precio para este par.')}</p></article>`;
-        const change=asNumber(quote.changePercent), cls=change===null?'flat':change>0?'up':change<0?'down':'flat';
-        const changeText=change===null?'Variación: n.d.':`${change>0?'+':''}${percentFormat.format(change)} %`;
-        let quoteTime='Hora de la cotización no facilitada';
-        if(quote.timestamp&&!Number.isNaN(new Date(quote.timestamp).getTime())) quoteTime='Cotización: '+dateFormat.format(new Date(quote.timestamp));
-        else if(quote.providerDatetime) quoteTime='Hora indicada por el proveedor: '+sanitize(quote.providerDatetime);
-        return `<article class="rate-card">${remove}<p class="rate-card__label">EUR / ${currency}</p><p class="rate-card__title">Precio de mercado</p><p class="rate-card__value">${formatted(quote.price)}</p><p class="rate-card__unit">1 EUR en ${currency}</p><p class="rate-card__variation rate-card__variation--${cls}">${changeText}</p><div class="rate-card__stats"><div class="rate-card__stat"><span>Máximo diario</span><strong>${formatted(quote.dayHigh)}</strong></div><div class="rate-card__stat"><span>Mínimo diario</span><strong>${formatted(quote.dayLow)}</strong></div><div class="rate-card__stat"><span>Cierre anterior</span><strong>${formatted(quote.previousClose)}</strong></div></div><p class="rate-card__date">${quoteTime}</p></article>`;
+        if(!found)return `<article class="rate-card">${remove}<p class="rate-card__label">EUR / ${currency}</p><p class="rate-card__title">Sin cotización</p><p class="rate-card__value">—</p><p class="rate-card__error">${sanitize(quote?.message||'No se ha recibido un precio para este par.')}</p></article>`;
+        let quoteTime='Hora exacta de la cotización no facilitada';
+        if(quote.timestamp&&!Number.isNaN(new Date(quote.timestamp).getTime())) quoteTime='Último precio: '+dateFormat.format(new Date(quote.timestamp));
+        else if(quote.providerDatetime)quoteTime='Fecha del proveedor: '+sanitize(quote.providerDatetime);
+        const baseNote=quote.approximateBaseTime&&quote.comparisonBaseAt
+          ?`<p class="rate-card__date rate-card__date--secondary">Hora de referencia aproximada: ${dateFormat.format(new Date(quote.comparisonBaseAt))}</p>`:'';
+        return `<article class="rate-card">${remove}<p class="rate-card__label">EUR / ${currency}</p><p class="rate-card__title">Precio de mercado</p><p class="rate-card__value">${formatted(quote.price)}</p><p class="rate-card__unit">1 EUR en ${currency}</p><div class="rate-card__comparisons" aria-label="Variaciones temporales">${variation('1 hora',quote.changes?.['1h'])}${variation('24 horas',quote.changes?.['24h'])}${variation('7 días',quote.changes?.['7d'])}</div>${quote.historyError?`<p class="rate-card__history-error">Históricos: ${sanitize(quote.historyError)}</p>`:''}<div class="rate-card__stats"><div class="rate-card__stat"><span>Máximo diario</span><strong>${formatted(quote.dayHigh)}</strong></div><div class="rate-card__stat"><span>Mínimo diario</span><strong>${formatted(quote.dayLow)}</strong></div><div class="rate-card__stat"><span>Cierre anterior</span><strong>${formatted(quote.previousClose)}</strong></div></div><p class="rate-card__date">${quoteTime}</p>${baseNote}</article>`;
       }
       async function loadQuotes(){
         const currentRequest=++requestId;
